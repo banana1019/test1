@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        display: flex;
+        justify-content: center;
+    }
+
+    .row {
+        width: 100vw;
+    }
+
+    .header {
+        background-color: indianred;
+        height: 10vh;
+    }
+
+    .main {
+        background-color: white;
+        height: 80vh;
+        display: flex;
+    }
+
+    .main .menuDiv {
+        background-color: ghostwhite;
+        width: 50vw;
+        overflow: auto;
+        scrollbar-width: none;
+    }
+
+    .menuList {
+        display: flex;
+        justify-content: center;
+        list-style: none;
+        flex-wrap: wrap;
+    }
+
+    .menu {
+        width: 230px;
+        height: 200px;
+        border: 1px solid darkgrey;
+        margin: 20px;
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+        padding-top: 10px;
+    }
+
+    .menu img {
+        width: 200px;
+        /*height: 100px;*/
+        /*position: relative;*/
+    }
+
+    .pop {
+        background-color: aliceblue;
+        width: 100vw;
+        height: 100vh;
+        position: absolute;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        vertical-align: center;
+        transform: scale(0.5);
+    }
+
+    .pop img {
+        width: 50%;
+        /*transform: scale(2);*/
+    }
+
+    .pop h2 {
+        /*text-align: center;*/
+        /*width: 200px;*/
+        /*position: absolute;*/
+        /*bottom: 0px;*/
+        /*display: flex;*/
+        /*flex-direction: row;*/
+        /*justify-content: center;*/
+    }
+
+    .show {
+        z-index: 1000;
+    }
+
+    .hide {
+        z-index: -1000;
+    }
+
+    hr h1 {
+        text-align: right;
+    }
+</style>
+
+<div class="pop hide">
+    <img src="img/b1.png">
+    <h2>ADD CART</h2>
+</div>
+
+<div class="container">
+    <div class="row header">
+
+    </div>
+    <div class="row main">
+
+        <div class="menuDiv">
+            <h1>MENU</h1>
+            <ul class="menuList">
+                <!-- 메뉴 -->
+            </ul>
+        </div>
+
+        <div class="orderDiv">
+            <h1>ORDER</h1>
+            <ul class="orderList">
+                <!-- 주문목록 -->
+            </ul>
+        </div>
+
+    </div>
+    <div class="row footer">
+
+    </div>
+</div>
+
+<script>
+
+    const orders = []
+
+    const menus = [
+        {name:'빅맥버거', price:5500, picture:'img/b1.png'},
+        {name:'피쉬버거', price:4500, picture:'img/b2.png'},
+        {name:'모짜렐라', price:6500, picture:'img/b3.png'},
+        {name:'에그버거', price:4500, picture:'img/b4.png'},
+        {name:'애플파이', price:2000, picture:'img/d1.png'},
+        {name:'초코콘', price:1000, picture:'img/d2.png'},
+        {name:'맥너겟', price:3000, picture:'img/d3.png'},
+        {name:'감자튀김', price:2500, picture:'img/s1.png'},
+        {name:'치킨랩', price:2000, picture:'img/s2.png'},
+        {name:'콜라', price:2000, picture:'img/s3.png'},
+    ]
+
+    makeMenuList(menus)
+
+    const menuList = document.querySelector(".menuList")
+
+    function makeMenuList(arr) {
+        const menuList = document.querySelector(".menuList")
+
+        let str = ''
+
+        for (let i = 0; i < arr.length; i++) {
+            const menu = menus[i]
+            str += `<li data-idx="${i}"><div class="menu"><img src="${menu.picture}"><div>${menu.name}</div><div>${menu.price}</div></div></li>`
+        }
+        menuList.innerHTML = str
+    }
+
+    // function showPop() {
+    //     const popEle = document.querySelector(".pop")
+    // }
+
+    const popEle = document.querySelector(".pop")
+
+    menuList.addEventListener("click", (e) => {
+        const target = e.target
+        const liEle = target.closest("li")
+        const idx = liEle.getAttribute("data-idx")
+        console.log(target)
+        console.log('IDX: ' + idx)
+
+        const targetMenu = menus[idx]
+        console.log(targetMenu)
+        const targetPicture = targetMenu.picture
+        console.log(targetPicture)
+        popEle.querySelector("img").setAttribute("src", targetPicture)
+        popEle.querySelector("h2").setAttribute("data-idx", idx)
+        popEle.setAttribute("class", "pop show")
+    }, false)
+
+    popEle.addEventListener("click", () => {
+        popEle.setAttribute("class", "pop hide")
+    }, false)
+
+    document.querySelector(".pop h2").addEventListener("click", (e) => {
+        e.stopPropagation()
+        e.preventDefault()
+
+        const target = e.target
+
+        const menu = menus[target.getAttribute("data-idx")]
+        console.log(menu)
+
+        addCart(menu)
+    }, false)
+
+    function addCart(menu) {
+        const result = orders.filter(oi => oi.name === menu.name)
+
+        console.log("----------check result-------------")
+        console.log(result)
+
+        if (result.length > 0) {
+            result[0].qty += 1
+        } else {
+            orders.push({...menu, qty: 1})
+        }
+
+        console.log(orders)
+        showOrderItems()
+    }
+
+    function showOrderItems() {
+        const orderListEle = document.querySelector(".orderList")
+
+        let str = ''
+        let sum = 0
+
+        for (let i = 0; i < orders.length; i++) {
+            const orderItem = orders[i]
+            str += `<li>${orderItem.name} =============== ${orderItem.qty} =============== ${orderItem.price * orderItem.qty}</li>`
+            sum += orderItem.price * orderItem.qty
+        }
+        str += `<hr/><h1 style="text-align: right">TOTAL ${sum}</h1>`
+        orderListEle.innerHTML = str
+    }
+
+</script>
+</body>
+</html>
